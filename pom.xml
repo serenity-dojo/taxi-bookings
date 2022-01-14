@@ -11,7 +11,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <serenity.version>3.1.15</serenity.version>
+        <serenity.version>3.1.16-SNAPSHOT</serenity.version>
         <encoding>UTF-8</encoding>
         <tags></tags>
         <webdriver.base.url></webdriver.base.url>
@@ -75,6 +75,11 @@
             <artifactId>assertj-core</artifactId>
             <version>3.6.2</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.sukgu</groupId>
+            <artifactId>automation</artifactId>
+            <version>0.1.3</version>
         </dependency>
     </dependencies>
     <build>

@@ -4,15 +4,30 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import net.serenitybdd.screenplay.Actor;
+import net.serenitybdd.screenplay.actions.Click;
 import net.serenitybdd.screenplay.actions.Open;
+import net.serenitybdd.screenplay.actors.OnStage;
+import net.serenitybdd.screenplay.questions.Text;
+import net.serenitybdd.screenplay.ui.Button;
+import net.serenitybdd.screenplay.waits.WaitUntil;
+import org.hamcrest.Matchers;
 import taxibookings.screenplay.cookies.ManageCookiePreferences;
+import taxibookings.screenplay.search.FlightList;
 import taxibookings.screenplay.search.PickAirport;
 import taxibookings.screenplay.search.PickTravelDate;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
+import static net.serenitybdd.screenplay.EventualConsequence.eventually;
+import static net.serenitybdd.screenplay.GivenWhenThen.seeThat;
+import static net.serenitybdd.screenplay.matchers.WebElementStateMatchers.isClickable;
+import static net.serenitybdd.screenplay.matchers.WebElementStateMatchers.isVisible;
+import static net.serenitybdd.screenplay.questions.WebElementQuestion.the;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SearchStepDefinitions {
 
@@ -36,18 +51,19 @@ public class SearchStepDefinitions {
         actor.attemptsTo(
                 PickAirport.flyingFrom(departure),
                 PickAirport.flyingTo(destination),
-                PickTravelDate.departingOn(departingDate),
-                PickTravelDate.returningOn(returningDate)
+                PickTravelDate.departingOn(departingDate).returningOn(returningDate),
+                WaitUntil.the(Button.called("Search"), isClickable()),
+                Click.on(Button.called("Search"))
         );
     }
 
     private LocalDate dateFrom(LocalDate startingDate, String dateDifference) {
-                return relativeDate(startingDate, dateDifference);
+        return relativeDate(startingDate, dateDifference);
     }
 
     private LocalDate dateFrom(String departureDate) {
         switch (departureDate) {
-            case "Today" :
+            case "Today":
                 return LocalDate.now();
             case "Tomorrow":
                 return LocalDate.now().plusDays(1);
@@ -61,13 +77,18 @@ public class SearchStepDefinitions {
         String[] dateElements = dateExpression.split(" ");
         int numberOfUnits = Integer.parseInt(dateElements[0]);
         ChronoUnit timeUnit = ChronoUnit.valueOf(dateElements[1].toUpperCase());
-        return startingDate.plus(numberOfUnits,timeUnit);
+        return startingDate.plus(numberOfUnits, timeUnit);
     }
 
-    @Then("the available flights should be displayed")
-    public void the_available_flights_should_be_displayed() {
-        // Write code here that turns the phrase above into concrete actions
-        //throw new io.cucumber.java.PendingException();
+    @Then("the available flights should be displayed for the following itineraries:")
+    public void the_available_flights_should_be_displayed(List<String> itineraries) {
+        Actor actor = OnStage.theActorInTheSpotlight();
+
+        actor.attemptsTo(
+                WaitUntil.the(FlightList.FLIGHT_ITINERARIES, isVisible())
+        );
+        Collection<String> itineraryTitles = actor.asksFor(Text.ofEach(FlightList.FLIGHT_ITINERARIES));
+        assertThat(itineraryTitles).hasSameElementsAs(itineraries);
     }
 
 }
